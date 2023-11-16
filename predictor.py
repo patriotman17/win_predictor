@@ -47,7 +47,7 @@ def update_records_and_get_team_quality_corrected(row, team_records, season_trac
     return pd.Series([home_is_good, visitor_is_good])
 
 # Load the dataset
-file_path = 'game_boxscores_2016_2022.csv'
+file_path = 'game_boxscores_2016_2023.csv'
 boxscores_df = pd.read_csv(file_path)
 
 # Selecting the relevant columns including team names
@@ -269,7 +269,7 @@ def update_team_records_2023(boxscores_df, team_records):
     return updated_boxscores_df
 
 # Load the dataset for the 2023 season
-file_path_2023 = 'game_boxscores_2023_all.csv'
+file_path_2023 = 'game_boxscores_2023_1_10.csv'
 boxscores_2023_df = pd.read_csv(file_path_2023)
 
 # Convert game_date to datetime and sort by game_date and season
@@ -319,8 +319,15 @@ comparison_columns = ['game_date', 'week', 'season', 'home_display_name', 'visit
 comparison_df = updated_boxscores_2023_df[comparison_columns]
 
 # Calculate the number of correct predictions
-correct_predictions = comparison_df[comparison_df['predicted_home_win'] == comparison_df['actual_home_win']]
+correct_predictions_count = comparison_df[comparison_df['predicted_home_win'] == comparison_df['actual_home_win']].shape[0]
 
-# Display the comparison dataframe and the number of correct predictions
-comparison_df.head(10), len(correct_predictions)
+# Calculate the total number of games
+total_games = comparison_df.shape[0]
+
+# Calculate the accuracy of the model
+accuracy = correct_predictions_count / total_games
+
+# Display the comparison dataframe, the number of correct predictions, and the accuracy
+print(f"Model Accuracy for 2023 Weeks 1-10: {accuracy:.2%}")
+comparison_df.head(10), correct_predictions_count
 
