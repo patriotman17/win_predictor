@@ -269,7 +269,7 @@ def update_team_records_2023(boxscores_df, team_records):
     return updated_boxscores_df
 
 # Load the dataset for the 2023 season
-file_path_2023 = 'game_boxscores_2023_1_10.csv'
+file_path_2023 = 'game_boxscores_2023_1.csv'
 boxscores_2023_df = pd.read_csv(file_path_2023)
 
 # Convert game_date to datetime and sort by game_date and season
