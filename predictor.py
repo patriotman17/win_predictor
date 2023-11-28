@@ -56,11 +56,21 @@ selected_columns = [
     'home_team_id', 'visitor_team_id', 
     'home_score_point_total', 'visitor_score_point_total', 
     'home_timeouts_remaining', 'visitor_timeouts_remaining', 
-    'validated', 'home_display_name', 'visitor_display_name'
+    'validated', 'home_display_name', 'visitor_display_name', 'spread_line', 'total_line'
 ]
+
+# Imputation for missing betting odds data
+
+# Replace NaN values in 'home_spread_line' and 'total_line' with their respective mean values
+mean_home_spread_line = boxscores_df['spread_line'].mean()
+mean_total_line = boxscores_df['total_line'].mean()
+
+boxscores_df['spread_line'].fillna(mean_home_spread_line, inplace=True)
+boxscores_df['total_line'].fillna(mean_total_line, inplace=True)
 
 # Creating a new dataframe with only the selected columns
 selected_boxscores_df = boxscores_df[selected_columns]
+
 
 # Initialize a dictionary to hold the team records and a dictionary to track the last processed season
 team_records = {}
@@ -194,7 +204,7 @@ from sklearn.preprocessing import StandardScaler
 regular_season_data = sorted_boxscores_df[sorted_boxscores_df['season_type'] == 'REG']
 
 # Our features will include whether the home and visitor teams are 'good' according to their regular season performance
-X = regular_season_data[['home_is_good', 'visitor_is_good']]
+X = regular_season_data[['home_is_good', 'visitor_is_good', 'spread_line', 'total_line']]
 
 # The target variable will be whether the home team won
 y = regular_season_data['home_win']
@@ -269,7 +279,7 @@ def update_team_records_2023(boxscores_df, team_records):
     return updated_boxscores_df
 
 # Load the dataset for the 2023 season
-file_path_2023 = 'game_boxscores_2023_1.csv'
+file_path_2023 = 'game_boxscores_2023_1_12.csv'
 boxscores_2023_df = pd.read_csv(file_path_2023)
 
 # Convert game_date to datetime and sort by game_date and season
@@ -282,13 +292,22 @@ team_records_2023 = {team: {'wins': 0, 'losses': 0, 'ties': 0} for team in team_
 # Update the team records for the 2023 season
 updated_boxscores_2023_df = update_team_records_2023(boxscores_2023_df_sorted, team_records_2023)
 
+
+# Imputation for missing betting odds data
+
+# Replace NaN values in 'home_spread_line' and 'total_line' with their respective mean values
+mean_home_spread_line = updated_boxscores_2023_df['spread_line'].mean()
+mean_total_line = updated_boxscores_2023_df['total_line'].mean()
+
+updated_boxscores_2023_df['spread_line'].fillna(mean_home_spread_line, inplace=True)
+updated_boxscores_2023_df['total_line'].fillna(mean_total_line, inplace=True)
 # %% Making our predictions
 
 # Making predictions for the 2023 season using the logistic regression model
 # We'll use the updated 'home_is_good' and 'visitor_is_good' features to make the predictions
 
 # Scale the 2023 features using the scaler from the 2016-2022 model
-X_2023 = updated_boxscores_2023_df[['home_is_good', 'visitor_is_good']]
+X_2023 = updated_boxscores_2023_df[['home_is_good', 'visitor_is_good', 'spread_line', 'total_line']]
 X_2023_scaled = scaler.transform(X_2023)
 
 # Making predictions using the trained model
@@ -298,7 +317,7 @@ y_pred_2023 = logreg_model.predict(X_2023_scaled)
 updated_boxscores_2023_df['predicted_home_win'] = y_pred_2023
 
 # Displaying the first few rows with the predictions
-updated_boxscores_2023_df[['game_date', 'week', 'season', 'home_display_name', 'visitor_display_name', 'home_is_good', 'visitor_is_good', 'predicted_home_win']].head(10)
+updated_boxscores_2023_df[['game_date', 'week', 'season', 'home_display_name', 'visitor_display_name', 'home_is_good', 'spread_line', 'total_line','visitor_is_good', 'predicted_home_win']].head(10)
 
 # %% Checking our predictions
 
@@ -315,7 +334,7 @@ updated_boxscores_2023_df['actual_home_win'] = updated_boxscores_2023_df.apply(g
 # Compare predictions with actual results
 comparison_columns = ['game_date', 'week', 'season', 'home_display_name', 'visitor_display_name',
                       'home_score_point_total', 'visitor_score_point_total',
-                      'predicted_home_win', 'actual_home_win']
+                      'predicted_home_win', 'actual_home_win', 'spread_line', 'total_line']
 comparison_df = updated_boxscores_2023_df[comparison_columns]
 
 # Calculate the number of correct predictions
